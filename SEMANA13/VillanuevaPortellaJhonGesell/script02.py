@@ -1,44 +1,33 @@
-"""Ventana de login con imagen y apertura de nueva ventana al hacer clic.
-
-Requisitos del docente (resumen):
-- Título de la ventana.
-- Cargar una imagen en la ventana.
-- Un botón que al hacer clic abra una nueva ventana (mínimo 300x300 px).
-- Campos de "Usuario" y "Contraseña" con entrada enmascarada con asteriscos.
-
-Para usarlo:
-- Coloca una imagen en la carpeta "imagenes/script02".
-- Ejecuta: python script02.py
-"""
-
-from pathlib import Path
+import os
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 
-IMG_PATH = Path(__file__).parent / "imagenes" / "script02"
+IMG_PATH = os.path.join(os.path.dirname(__file__), "imagenes", "script02")
 SUPPORTED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff"}
 
 
 def load_login_image():
-    for image_path in sorted(IMG_PATH.iterdir()):
-        if image_path.suffix.lower() not in SUPPORTED_EXTENSIONS:
+    for name in sorted(os.listdir(IMG_PATH)):
+        path = os.path.join(IMG_PATH, name)
+        if not os.path.isfile(path):
             continue
-        with Image.open(image_path) as img:
-            resized = img.resize((250, int(img.height * (250 / img.width))), Image.LANCZOS)
+        if os.path.splitext(name)[1].lower() not in SUPPORTED_EXTENSIONS:
+            continue
+        with Image.open(path) as img:
+            width = 250
+            height = int(img.height * (width / img.width))
+            resized = img.resize((width, height), Image.LANCZOS)
             return ImageTk.PhotoImage(resized)
-    # Placeholder simple
     placeholder = Image.new("RGB", (250, 160), color="#cfd8dc")
     return ImageTk.PhotoImage(placeholder)
 
 
-def open_welcome_window(username: str):
+def open_welcome_window(username):
     top = tk.Toplevel()
     top.title("Panel principal")
     top.minsize(300, 300)
-    ttk.Label(top, text=f"Bienvenido, {username or 'usuario'}", font=("Arial", 14)).pack(
-        pady=20
-    )
+    ttk.Label(top, text=f"Bienvenido, {username or 'usuario'}", font=("Arial", 14)).pack(pady=20)
 
 
 def build_ui(root):
@@ -66,9 +55,7 @@ def build_ui(root):
     def on_login():
         open_welcome_window(username_var.get())
 
-    login_button = ttk.Button(main_frame, text="Ingresar", command=on_login)
-    login_button.pack(fill=tk.X)
-
+    ttk.Button(main_frame, text="Ingresar", command=on_login).pack(fill=tk.X)
     username_entry.focus()
 
 
