@@ -1,26 +1,27 @@
-
-from pathlib import Path
+import os
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 
-IMG_DIR = Path(__file__).parent / "imagenes" / "script01"
+IMG_DIR = os.path.join(os.path.dirname(__file__), "imagenes", "script01")
 TARGET_WIDTH = 400
 MAX_IMAGES = 4
 SUPPORTED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff"}
 
 
 def load_images():
-    """Carga hasta MAX_IMAGES imágenes desde IMG_DIR y las redimensiona."""
     images = []
-    for image_path in sorted(IMG_DIR.iterdir()):
-        if image_path.suffix.lower() not in SUPPORTED_EXTENSIONS:
+    for name in sorted(os.listdir(IMG_DIR)):
+        path = os.path.join(IMG_DIR, name)
+        if not os.path.isfile(path):
             continue
-        with Image.open(image_path) as img:
+        if os.path.splitext(name)[1].lower() not in SUPPORTED_EXTENSIONS:
+            continue
+        with Image.open(path) as img:
             ratio = TARGET_WIDTH / float(img.width)
             resized_height = int(img.height * ratio)
-            resized_img = img.resize((TARGET_WIDTH, resized_height), Image.LANCZOS)
-            images.append(ImageTk.PhotoImage(resized_img))
+            resized = img.resize((TARGET_WIDTH, resized_height), Image.LANCZOS)
+            images.append(ImageTk.PhotoImage(resized))
         if len(images) >= MAX_IMAGES:
             break
     return images
@@ -44,9 +45,7 @@ def build_ui(root):
     scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
     scrollable_frame = ttk.Frame(canvas)
 
-    scrollable_frame.bind(
-        "<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-    )
+    scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
 
     canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
     canvas.configure(yscrollcommand=scrollbar.set)
@@ -63,7 +62,7 @@ def build_ui(root):
         frame = ttk.Frame(scrollable_frame, padding=5)
         frame.grid(row=row, column=col, sticky="nsew")
         label = ttk.Label(frame, image=image)
-        label.image = image  # mantener referencia
+        label.image = image
         label.pack()
 
     for col in range(2):
