@@ -1,0 +1,1 @@
+Añade una imagen (jpg, png, etc.) para mostrar en la ventana de login del script02.py.

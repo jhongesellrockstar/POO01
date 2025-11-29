@@ -1,0 +1,1 @@
+Añade cuatro imágenes (jpg, png, etc.) para el script01.py. Nómbralas libremente; el programa buscará cualquier archivo de imagen dentro de esta carpeta y mostrará los primeros cuatro.
