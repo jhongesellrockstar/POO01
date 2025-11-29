@@ -1,0 +1,15 @@
+Recursos de imagen requeridos por los scripts de ejemplo:
+1. Icono de la ventana (usado en ejercicio4_1.py y ejercicio4_2.py).
+   - Tipo de archivo: imagen de icono.
+   - Extensión requerida: .ico
+   - Nombre del archivo: world.ico (guárdalo dentro de la carpeta imagenes/)
+
+2. Fotografía para ejercicio4_2.py (cargada desde la subcarpeta paisajes/ dentro de imagenes/).
+   - Tipo de archivo: imagen fotográfica a color.
+   - Extensión requerida: .jpg
+   - Nombre del archivo: naturaleza.jpg
+
+3. Fotografía para ejercicio4.3.py (ubicada en la misma carpeta que el script).
+   - Tipo de archivo: imagen fotográfica a color.
+   - Extensión requerida: .jpg
+   - Nombre del archivo: naturaleza.jpg
