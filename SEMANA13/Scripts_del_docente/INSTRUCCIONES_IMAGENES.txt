@@ -13,3 +13,8 @@ Recursos de imagen requeridos por los scripts de ejemplo:
    - Tipo de archivo: imagen fotográfica a color.
    - Extensión requerida: .jpg
    - Nombre del archivo: naturaleza.jpg
+
+4. Fotografía para ejercicio4_4.py (puede alojarse en imagenes/formulario_avanzado/ para mantenerla organizada).
+   - Tipo de archivo: imagen fotográfica a color.
+   - Extensión requerida: .jpg
+   - Nombre sugerido: naturaleza.jpg (el script la busca por este nombre en su misma carpeta).
