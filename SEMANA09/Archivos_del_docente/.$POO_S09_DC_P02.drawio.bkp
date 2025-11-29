@@ -1,0 +1,47 @@
+<mxfile host="Electron" modified="2025-11-02T00:43:46.835Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.1.21 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="CYv__R1G7nMqL3hNNPMt" version="22.1.21" type="device">
+  <diagram name="Página-1" id="u715b3g2QdLkxIuEozNw">
+    <mxGraphModel dx="495" dy="302" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="S5r9rgz6hx-7RswGk0JP-1" value="DispositivoEntrada" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="10" width="350" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="S5r9rgz6hx-7RswGk0JP-8" value="&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;+ __str__()&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;+ (agregar los métodos get/set de cada atributo)&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;" vertex="1" parent="S5r9rgz6hx-7RswGk0JP-1">
+          <mxGeometry x="10" y="70" width="330" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="S5r9rgz6hx-7RswGk0JP-10" value="&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Responsabilidades&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;- Crear objetos de tipo DispositivoEntrada&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;" vertex="1" parent="S5r9rgz6hx-7RswGk0JP-1">
+          <mxGeometry x="10" y="110" width="330" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="S5r9rgz6hx-7RswGk0JP-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="S5r9rgz6hx-7RswGk0JP-2">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="570" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="S5r9rgz6hx-7RswGk0JP-2" value="Ratón" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="350" y="240" width="160" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="S5r9rgz6hx-7RswGk0JP-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="S5r9rgz6hx-7RswGk0JP-3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="570" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="S5r9rgz6hx-7RswGk0JP-3" value="Teclado" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="599" y="240" width="380" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="S5r9rgz6hx-7RswGk0JP-11" value="" style="rounded=0;whiteSpace=wrap;html=1;align=left;" vertex="1" parent="S5r9rgz6hx-7RswGk0JP-3">
+          <mxGeometry x="20" y="40" width="340" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="S5r9rgz6hx-7RswGk0JP-12" value="" style="rounded=0;whiteSpace=wrap;html=1;align=left;" vertex="1" parent="S5r9rgz6hx-7RswGk0JP-3">
+          <mxGeometry x="20" y="90" width="340" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="S5r9rgz6hx-7RswGk0JP-13" value="" style="rounded=0;whiteSpace=wrap;html=1;align=left;" vertex="1" parent="S5r9rgz6hx-7RswGk0JP-3">
+          <mxGeometry x="20" y="140" width="340" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="S5r9rgz6hx-7RswGk0JP-9" value="&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;- TipoEntrada: String&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;- marca: string&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="410" y="40" width="330" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
