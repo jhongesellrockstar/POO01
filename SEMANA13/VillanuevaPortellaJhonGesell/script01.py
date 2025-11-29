@@ -1,13 +1,3 @@
-"""Muestra cuatro imágenes en una cuadrícula utilizando Tkinter.
-
-Requisitos del docente (resumen):
-1. Agregar 4 imágenes, redimensionarlas a 400 px de ancho (alto libre) y mostrar las 4 a la vez.
-2. Las imágenes deben caber dentro de la ventana (se usa scroll si hay más de 4).
-
-Para usarlo:
-- Copia 4 imágenes en la carpeta "imagenes/script01".
-- Ejecuta: python script01.py
-"""
 
 from pathlib import Path
 import tkinter as tk
@@ -37,7 +27,6 @@ def load_images():
 
 
 def placeholder_images():
-    """Devuelve 4 bloques de color si no hay imágenes reales."""
     colors = ["#e57373", "#64b5f6", "#81c784", "#ffb74d"]
     placeholders = []
     for color in colors:
