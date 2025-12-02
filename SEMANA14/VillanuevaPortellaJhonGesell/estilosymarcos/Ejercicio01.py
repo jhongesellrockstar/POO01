@@ -1,68 +1,36 @@
 from tkinter import *
-import os
-root=Tk()
+
+# Creación de la ventana principal
+root = Tk()
 root.title('Tablero de ajedrez')
-root.geometry("300x300")
-"""marco1=LabelFrame(root,
-                 padx=25,
-                 pady=10,
-                 foreground='red',
-                 background='sea green',
-                 )
-marco1.grid(padx=1,pady=15,row=0,column=0,)
+root.resizable(False, False)
 
-marco2=LabelFrame(root,
-                 padx=25,
-                 pady=10,
-                 foreground='red',
-                 background='palegreen',
-                 )
-marco2.grid(row=1,column=0,padx=5,pady=15)"""
+# Marco contenedor del tablero
+marco_tablero = LabelFrame(
+    root,
+    text='Tablero de 8 x 8',
+    padx=12,
+    pady=12,
+)
+marco_tablero.pack(padx=15, pady=15)
 
-boton01=Button(background='indian red',
-             border=3,
-             width=3
-             )
-boton01.grid(row=0,column=0,padx=25,pady=10)
-boton02=Button(background='cyan',
-             border=3,
-             width=3
-             )
-boton02.grid(row=0,column=1,padx=10,pady=10)
-boton03=Button(background='indian red',
-             border=3,
-             width=3
-             )
-boton03.grid(row=0,column=2,padx=25,pady=10)
-boton04=Button(background='cyan',
-             border=3,
-             width=3
-             )
-boton04.grid(row=1,column=0,padx=25,pady=10)
-boton05=Button(background='indian red',
-             border=3,
-             width=3
-             )
-boton05.grid(row=1,column=1,padx=25,pady=10)
-boton06=Button(background='cyan',
-             border=3,
-             width=3
-             )
-boton06.grid(row=1,column=2,padx=25,pady=10)
-boton07=Button(background='indian red',
-             border=3,
-             width=3
-             )
-boton07.grid(row=2,column=0,padx=25,pady=10)
-boton08=Button(background='cyan',
-             border=3,
-             width=3
-             )
-boton08.grid(row=2,column=1,padx=25,pady=10)
-boton09=Button(background='indian red',
-             border=3,
-             width=3
-             )
-boton09.grid(row=2,column=2,padx=25,pady=10)
+# Colores alternados para las casillas
+color_oscuro = 'sienna'
+color_claro = 'cornsilk'
 
+# Construcción del tablero
+for fila in range(8):
+    for columna in range(8):
+        color = color_oscuro if (fila + columna) % 2 == 0 else color_claro
+        Button(
+            marco_tablero,
+            background=color,
+            activebackground=color,
+            border=1,
+            width=4,
+            height=2,
+            state=DISABLED,
+        ).grid(row=fila, column=columna, padx=2, pady=2)
+
+# Bucle de ejecución
 root.mainloop()
