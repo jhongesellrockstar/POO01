@@ -8,19 +8,19 @@ root.resizable(False, False)
 # Marco contenedor del tablero
 marco_tablero = LabelFrame(
     root,
-    text='Tablero de 8 x 8',
-    padx=12,
-    pady=12,
+    text='Tablero de 3 x 3',
+    padx=15,
+    pady=15,
 )
 marco_tablero.pack(padx=15, pady=15)
 
 # Colores alternados para las casillas
-color_oscuro = 'sienna'
-color_claro = 'cornsilk'
+color_oscuro = 'red'
+color_claro = 'turquoise'
 
 # Construcción del tablero
-for fila in range(8):
-    for columna in range(8):
+for fila in range(3):
+    for columna in range(3):
         color = color_oscuro if (fila + columna) % 2 == 0 else color_claro
         Button(
             marco_tablero,

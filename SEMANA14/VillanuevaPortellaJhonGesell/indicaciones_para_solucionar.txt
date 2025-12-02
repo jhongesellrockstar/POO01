@@ -1,0 +1,19 @@
+En la carpeta del laboratorio del curso de Programación Orientada a Objetos , para el problema de "LAB Estilos y Marcos de Tkinter" vas a crear para cada item scripts acumulativos, es decir:
+
+1. Crea un marco con un ancho (width) de 300px y un alto (height) de 300px. Al 
+establecer  estos  atributos,  el  marco  se  mostrará,  aunque  este  vacío. 
+Además, escribe de título del marco un texto cualquiera.  --> Para este item crear en "SEMANA14\VillanuevaPortellaJhonGesell\estilosymarcos" un script llamado SCRIPT01.py que ejecute esta tarea.
+ 
+2. Añade unos márgenes de 25px de ancho y 10px de alto al marco frente a la 
+ventana. --> Para este item crear en "SEMANA14\VillanuevaPortellaJhonGesell\estilosymarcos" un script llamado SCRIPT02.py que ejecute este item y la tarea anterior en orden secuencial para su construcción del código.
+ 
+3. Borra el marco anterior. Crea dos marcos vacíos con un ancho (width) de 
+200px y un alto (height) de 400px. Deberán aparecer uno al lado del otro (uno 
+a la izquierda y otro a la derecha en la misma fila). No le pongas atributo text. 
+Ponles un color de fondo diferente a cada uno. --> Para este item crear en "SEMANA14\VillanuevaPortellaJhonGesell\estilosymarcos" un script llamado SCRIPT03.py que ejecute este item y las tareas anteriores en orden secuencial para su construcción del código.
+ 
+4. Representar esta cuadricula con marcos. Los colores son libres (elige 2) y el 
+tamaño de los marcos también. Eso si debes seguir este patrón estilo 
+ajedrez. --> Para este item crear en "SEMANA14\VillanuevaPortellaJhonGesell\estilosymarcos" un script llamado SCRIPT04.py que ejecute este item y las tareas anteriores en orden secuencial para su construcción del código.
+
+Como nota adicional, el docente en la figura de su ejemplo para este ejercicio mostró un tablero de ajedréz de 3x3 cuadros, de otro lado en clase el docente no usó ejemplos de anidamiento (for) para construirlo ya que estamos haciendo Tkinter para principiantes.

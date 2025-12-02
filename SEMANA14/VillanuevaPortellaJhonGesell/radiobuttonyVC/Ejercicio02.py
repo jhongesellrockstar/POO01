@@ -6,7 +6,7 @@ root.title('RadioButton y variables de control')
 root.resizable(False, False)
 
 # Variables de control
-color_seleccionado = IntVar(value=1)
+color_seleccionado = IntVar()
 colores = {
     1: ('Rojo', 'firebrick1'),
     2: ('Azul', 'royalblue2'),
@@ -22,7 +22,7 @@ marco_boton = LabelFrame(root, text='Acción', padx=12, pady=12)
 marco_boton.grid(row=1, column=0, padx=10, pady=10, sticky='n')
 
 marco_resultado = LabelFrame(root, text='Resultado', padx=12, pady=12)
-marco_resultado.grid(row=0, column=1, rowspan=2, padx=10, pady=10)
+marco_resultado.grid(row=2, column=0, rowspan=2, padx=10, pady=10)
 
 # Etiqueta donde se mostrará la selección
 resultado = Label(marco_resultado, text='Color seleccionado: Rojo', width=25)
