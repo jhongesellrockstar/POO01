@@ -1,0 +1,19 @@
+{
+  "70585223": {
+    "dni": "70585223",
+    "correo": "jhvillanueva91@gmail.com",
+    "nombre": "Jhon Gesell Villanueva Portella",
+    "password_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+    "historial": [
+      {
+        "paciente_dni": "70585223",
+        "hospital_id": 6,
+        "hospital_nombre": "Centro de Salud Ventanilla",
+        "especialidad": "Medicina General",
+        "fecha": "2025-12-06",
+        "hora": "11:00",
+        "estado": "Reservada"
+      }
+    ]
+  }
+}

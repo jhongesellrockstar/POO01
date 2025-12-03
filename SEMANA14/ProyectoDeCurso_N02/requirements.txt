@@ -1,0 +1,22 @@
+Instalación de dependencias para SaludTurno
+============================================
+
+Para usar todas las funcionalidades de la aplicación SaludTurno, necesitarás instalar algunas dependencias adicionales.
+
+Dependencias opcionales:
+- reportlab: Para generar tickets en formato PDF
+
+Para instalar reportlab:
+```
+pip install reportlab
+```
+
+Esto habilitará la generación de tickets en formato PDF. Si no instalas reportlab, 
+la aplicación generará tickets en formato de texto (.txt) y los mostrará en ventanas emergentes.
+
+Para instalar todas las dependencias necesarias:
+```
+pip install reportlab
+```
+
+La aplicación debería funcionar correctamente una vez instaladas estas dependencias.
