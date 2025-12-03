@@ -2,22 +2,22 @@ En la carpeta del laboratorio del curso de Programación Orientada a Objetos , p
 
 1. Crea cuatro Radiobutton con el texto que quieras en cada uno de ellos. 
 colócalos en grid(). Solo ocuparan dos filas. No habrá opción por defecto
-seleccionada. --> Para este item crear en "SEMANA14\VillanuevaPortellaJhonGesell\radiobuttonyVC" un script llamado SCRIPT01.py que ejecute esta tarea.
+seleccionada. --> Para este item crear en "SEMANA14\VillanuevaPortellaJhonGesell\radiobuttonyVC" un script llamado SCRIPT01.py que ejecute esta tarea. (Figura_referencia_item01.png)
 
 2. Añade una carpeta al proyecto con cuatro imágenes. Estas tendrán que
 mostrarse encima de cada Radiobutton con un tamaño de 200px de ancho.
-El alto, es libre. Intenta utilizar imágenes con la misma proporción. --> Para este item crear en "SEMANA14\VillanuevaPortellaJhonGesell\radiobuttonyVC" un script llamado SCRIPT02.py que ejecute este item y la tarea anterior en orden secuencial para su construcción del código.
+El alto, es libre. Intenta utilizar imágenes con la misma proporción. --> Para este item crear en "SEMANA14\VillanuevaPortellaJhonGesell\radiobuttonyVC" un script llamado SCRIPT02.py que ejecute este item y la tarea anterior en orden secuencial para su construcción del código. (Figura_referencia_item02.png)
 
-3. Pon un color en los radio button como se muestra en las imágenes. --> Para este item crear en "SEMANA14\VillanuevaPortellaJhonGesell\radiobuttonyVC" un script llamado SCRIPT03.py que ejecute este item y las tareas anteriores en orden secuencial para su construcción del código.
+3. Pon un color en los radio button como se muestra en las imágenes. --> Para este item crear en "SEMANA14\VillanuevaPortellaJhonGesell\radiobuttonyVC" un script llamado SCRIPT03.py que ejecute este item y las tareas anteriores en orden secuencial para su construcción del código. (Figura_referencia_item03.png)
 
-4. Todo el contenido este en un marco como se muestra en la figura. --> Para este item crear en "SEMANA14\VillanuevaPortellaJhonGesell\radiobuttonyVC" un script llamado SCRIPT03.py que ejecute este item y las tareas anteriores en orden secuencial para su construcción del código.
+4. Todo el contenido este en un marco como se muestra en la figura. --> Para este item crear en "SEMANA14\VillanuevaPortellaJhonGesell\radiobuttonyVC" un script llamado SCRIPT04.py que ejecute este item y las tareas anteriores en orden secuencial para su construcción del código. (Figura_referencia_item04.png)
 
 5. Añade un botón que, al pulsarlo con una opción de radio button marcada se
 le entregara una etiqueta, por ejemplo :” Hola Emma” , “Accediendo a tu
 cuenta personal”. Si no hay ninguna opción marcada se le entregara una
-etiqueta con un color rojo que muestra: “Debe seleccionar una opción”. --> Para este item crear en "SEMANA14\VillanuevaPortellaJhonGesell\radiobuttonyVC" un script llamado SCRIPT03.py que ejecute este item y las tareas anteriores en orden secuencial para su construcción del código.
+etiqueta con un color rojo que muestra: “Debe seleccionar una opción”. --> Para este item crear en "SEMANA14\VillanuevaPortellaJhonGesell\radiobuttonyVC" un script llamado SCRIPT05.py que ejecute este item y las tareas anteriores en orden secuencial para su construcción del código. (Figura_referencia_item05.png)
 
 6. Cambiar el botón. Puedes escoger el diseño del botón en la pagina de Button
-Optimizer. --> Para este item crear en "SEMANA14\VillanuevaPortellaJhonGesell\radiobuttonyVC" un script llamado SCRIPT03.py que ejecute este item y las tareas anteriores en orden secuencial para su construcción del código.
+Optimizer. --> Para este item crear en "SEMANA14\VillanuevaPortellaJhonGesell\radiobuttonyVC" un script llamado SCRIPT06.py que ejecute este item y las tareas anteriores en orden secuencial para su construcción del código. (Figura_referencia_item06.png)
 
 Como nota adicional, el docente en brindó figuras de ejemplo para cada item de este ejercicio los nombres de referencia siguen la sintaxis "Figura_referencia_item0*.png" en la carpeta "\SEMANA14\VillanuevaPortellaJhonGesell\radiobuttonyVC", cada radioButton segun indique el item se asocia a una imagen que se debe cargar en el programa, las imagenes a utilizar estan contenidas en la carpeta "\SEMANA14\VillanuevaPortellaJhonGesell\radiobuttonyVC\Figuras_a_usar" con un nombre que puede asociarse el numero de figura al numero de item, los radiobuton se cargan en una matriz de 2x2 como el ejemplo, cada figura asociada a un radiobutton se coloca encima; de otro lado en clase el docente no usó ejemplos de anidamiento (for) para construirlo ya que estamos haciendo Tkinter para principiantes.

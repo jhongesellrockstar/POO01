@@ -6,10 +6,10 @@ def main():
     window.title("Radio Buttons - Item 1")
 
     options = [
-        "Opción Norte",
-        "Opción Sur",
-        "Opción Este",
-        "Opción Oeste",
+        "Moto 01",
+        "Moto 02",
+        "Moto 03",
+        "Moto 04",
     ]
 
     selected_option = tk.IntVar(value=0)
