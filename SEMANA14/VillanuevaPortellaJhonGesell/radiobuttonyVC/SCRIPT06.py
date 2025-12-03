@@ -1,12 +1,16 @@
 import tkinter as tk
+from pathlib import Path
+
 from PIL import Image, ImageTk
 
 
+BASE_DIR = Path(__file__).resolve().parent
+IMAGE_DIR = BASE_DIR / "Figuras_a_usar"
 IMAGE_PATHS = [
-    "Figuras_a_usar/Figure01.png",
-    "Figuras_a_usar/Figure02.jpg",
-    "Figuras_a_usar/Figure03.jpg",
-    "Figuras_a_usar/Figure04.png",
+    IMAGE_DIR / "Figure01.png",
+    IMAGE_DIR / "Figure02.jpg",
+    IMAGE_DIR / "Figure03.jpg",
+    IMAGE_DIR / "Figure04.png",
 ]
 
 BUTTON_COLORS = [
@@ -54,7 +58,7 @@ def main():
 
         radio = tk.Radiobutton(
             container,
-            text=f"Opción {index + 1}",
+            text=f"Moto {index + 1:02d}",
             variable=selected_option,
             value=index + 1,
             indicatoron=True,

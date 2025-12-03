@@ -1,12 +1,16 @@
 import tkinter as tk
+from pathlib import Path
+
 from PIL import Image, ImageTk
 
 
+BASE_DIR = Path(__file__).resolve().parent
+IMAGE_DIR = BASE_DIR / "Figuras_a_usar"
 IMAGE_PATHS = [
-    "Figuras_a_usar/Figure01.png",
-    "Figuras_a_usar/Figure02.jpg",
-    "Figuras_a_usar/Figure03.jpg",
-    "Figuras_a_usar/Figure04.png",
+    IMAGE_DIR / "Figure01.png",
+    IMAGE_DIR / "Figure02.jpg",
+    IMAGE_DIR / "Figure03.jpg",
+    IMAGE_DIR / "Figure04.png",
 ]
 
 
@@ -25,10 +29,10 @@ def main():
     window.title("Radio Buttons con imágenes - Item 2")
 
     options = [
-        "Opción Norte",
-        "Opción Sur",
-        "Opción Este",
-        "Opción Oeste",
+        "Moto 01",
+        "Moto 02",
+        "Moto 03",
+        "Moto 04",
     ]
 
     selected_option = tk.IntVar(value=0)
