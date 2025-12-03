@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 # POO: Clases del dominio
 # ----------------------------
 class Paciente:
-    def _init_(self, dni, correo, nombre, password_hash):
+    def __init__(self, dni, correo, nombre, password_hash):
         self.dni = dni
         self.correo = correo
         self.nombre = nombre
@@ -34,25 +34,28 @@ class Paciente:
         return p
 
 class Medico:
-    def _init_(self, nombre, especialidad):
+    def __init__(self, nombre, especialidad):
         self.nombre = nombre
         self.especialidad = especialidad
 
+
 class Especialidad:
-    def _init_(self, nombre):
+    def __init__(self, nombre):
         self.nombre = nombre
 
+
 class Hospital:
-    def _init(self, id, nombre, x, y, afiliacion, especialidades):
-        self.id = id_
+    def __init__(self, id, nombre, x, y, afiliacion, especialidades):
+        self.id = id
         self.nombre = nombre
         self.x = x
         self.y = y
         self.afiliacion = afiliacion
         self.especialidades = especialidades
 
+
 class Cita:
-    def _init_(self, paciente_dni, hospital_id, hospital_nombre, especialidad, fecha, hora, estado="Reservada"):
+    def __init__(self, paciente_dni, hospital_id, hospital_nombre, especialidad, fecha, hora, estado="Reservada"):
         self.paciente_dni = paciente_dni
         self.hospital_id = hospital_id
         self.hospital_nombre = hospital_nombre
@@ -126,7 +129,7 @@ HOSPITALES = build_sample_hospitals()
 # Aplicación con Tkinter (frames que cambian)
 # ----------------------------
 class SaludTurnoApp:
-    def _init_(self, root):
+    def __init__(self, root):
         self.root = root
         root.title("SaludTurno - Gestión de Citas (Simulado)")
         root.geometry("1000x650")
@@ -467,7 +470,76 @@ class SaludTurnoApp:
         esp = self.especialidad_var.get() or "(no seleccionado)"
         fecha = self.date_combo.get()
         hora = self.hora_combo.get()
-        texto = f"Hospital: {hospital.nombre}\nAfiliación: {hospital.afiliacion}\nEspecialidad: {esp}\nFecha: {fecha}\nHora: {hora}\nUsuario: {self.current_user.nombre}\n"
+        texto = (
+            f"Hospital: {hospital.nombre}\n"
+            f"Afiliación: {hospital.afiliacion}\n"
+            f"Especialidad: {esp}\n"
+            f"Fecha: {fecha}\n"
+            f"Hora: {hora}\n"
+            f"Usuario: {self.current_user.nombre}\n"
+        )
         self.resumen_text.config(state="normal")
         self.resumen_text.delete("1.0", tk.END)
-        self.resumen
+        self.resumen_text.insert("1.0", texto)
+        self.resumen_text.config(state="disabled")
+
+    def confirm_booking(self, hospital):
+        especialidad = self.especialidad_var.get()
+        if not especialidad:
+            messagebox.showwarning("Selecciona especialidad", "Debes escoger una especialidad para reservar.")
+            return
+
+        fecha = self.date_combo.get()
+        hora = self.hora_combo.get()
+        cita = Cita(
+            self.current_user.dni,
+            hospital.id,
+            hospital.nombre,
+            especialidad,
+            fecha,
+            hora,
+        )
+
+        self.current_user.agregar_cita(cita)
+        save_users(self.users)
+        messagebox.showinfo(
+            "Cita reservada",
+            f"Cita en {hospital.nombre} para {especialidad} el {fecha} a las {hora} registrada con éxito.",
+        )
+        self.back_to_map()
+
+    def show_historial(self):
+        if not self.current_user.historial:
+            messagebox.showinfo("Historial vacío", "Aún no tienes citas registradas.")
+            return
+
+        ventana = tk.Toplevel(self.root)
+        ventana.title("Historial de citas")
+        ventana.geometry("700x300")
+
+        cols = ("hospital", "especialidad", "fecha", "hora", "estado")
+        tree = ttk.Treeview(ventana, columns=cols, show="headings")
+        for col in cols:
+            tree.heading(col, text=col.capitalize())
+            tree.column(col, width=120)
+        tree.pack(fill="both", expand=True, padx=10, pady=10)
+
+        for c in self.current_user.historial:
+            tree.insert(
+                "",
+                tk.END,
+                values=(c.hospital_nombre, c.especialidad, c.fecha, c.hora, c.estado),
+            )
+
+    def run(self):
+        self.root.mainloop()
+
+
+def main():
+    root = tk.Tk()
+    app = SaludTurnoApp(root)
+    app.run()
+
+
+if __name__ == "__main__":
+    main()
