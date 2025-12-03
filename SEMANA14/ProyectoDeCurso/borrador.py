@@ -1,105 +1,9 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-import json
-import hashlib
 from datetime import datetime, timedelta
 
-# ----------------------------
-# POO: Clases del dominio
-# ----------------------------
-class Paciente:
-    def _init_(self, dni, correo, nombre, password_hash):
-        self.dni = dni
-        self.correo = correo
-        self.nombre = nombre
-        self.password_hash = password_hash
-        self.historial = []
-
-    def agregar_cita(self, cita):
-        self.historial.append(cita)
-
-    def to_dict(self):
-        return {
-            "dni": self.dni,
-            "correo": self.correo,
-            "nombre": self.nombre,
-            "password_hash": self.password_hash,
-            "historial": [c.to_dict() for c in self.historial]
-        }
-
-    @staticmethod
-    def from_dict(d):
-        p = Paciente(d['dni'], d['correo'], d['nombre'], d['password_hash'])
-        p.historial = [Cita.from_dict(cd) for cd in d.get('historial', [])]
-        return p
-
-class Medico:
-    def _init_(self, nombre, especialidad):
-        self.nombre = nombre
-        self.especialidad = especialidad
-
-class Especialidad:
-    def _init_(self, nombre):
-        self.nombre = nombre
-
-class Hospital:
-    def _init(self, id, nombre, x, y, afiliacion, especialidades):
-        self.id = id_
-        self.nombre = nombre
-        self.x = x
-        self.y = y
-        self.afiliacion = afiliacion
-        self.especialidades = especialidades
-
-class Cita:
-    def _init_(self, paciente_dni, hospital_id, hospital_nombre, especialidad, fecha, hora, estado="Reservada"):
-        self.paciente_dni = paciente_dni
-        self.hospital_id = hospital_id
-        self.hospital_nombre = hospital_nombre
-        self.especialidad = especialidad
-        self.fecha = fecha
-        self.hora = hora
-        self.estado = estado
-
-    def to_dict(self):
-        return {
-            "paciente_dni": self.paciente_dni,
-            "hospital_id": self.hospital_id,
-            "hospital_nombre": self.hospital_nombre,
-            "especialidad": self.especialidad,
-            "fecha": self.fecha,
-            "hora": self.hora,
-            "estado": self.estado
-        }
-
-    @staticmethod
-    def from_dict(d):
-        return Cita(d['paciente_dni'], d['hospital_id'], d['hospital_nombre'],
-                    d['especialidad'], d['fecha'], d['hora'], d.get('estado', 'Reservada'))
-
-# ----------------------------
-# Persistencia simple de usuarios
-# ----------------------------
-USERS_FILE = "users.json"
-
-def load_users():
-    try:
-        with open(USERS_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return {k: Paciente.from_dict(v) for k, v in data.items()}
-    except FileNotFoundError:
-        return {}
-    except Exception as e:
-        print("Error cargando users:", e)
-        return {}
-
-def save_users(users):
-    data = {k: v.to_dict() for k, v in users.items()}
-    with open(USERS_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-def hash_password(pw):
-    return hashlib.sha256(pw.encode("utf-8")).hexdigest()
+from database import Database
+from models import Cita, Especialidad, Hospital, Paciente, hash_password
 
 # ----------------------------
 # Datos de hospitales del Callao (simulados)
@@ -117,6 +21,12 @@ def build_sample_hospitals():
         Hospital(4, "Posta Salud A (Callao Centro)", 0.45, 0.70, "SIS", [esp_general, esp_pediatria]),
         Hospital(5, "Posta Salud B (La Perla)", 0.20, 0.25, "Seguro", [esp_general, esp_gineco]),
         Hospital(6, "Centro de Salud Ventanilla", 0.85, 0.25, "SIS", [esp_general, esp_trauma]),
+        Hospital(7, "Hospital Nacional Alberto Sabogal", 0.62, 0.42, "Seguro", [esp_general, esp_cardiologia, esp_gineco]),
+        Hospital(8, "Hospital Nacional Arzobispo Loayza", 0.40, 0.15, "SIS", [esp_general, esp_gineco, esp_pediatria]),
+        Hospital(9, "Hospital Guillermo Almenara", 0.15, 0.45, "Seguro", [esp_general, esp_cardiologia, esp_trauma]),
+        Hospital(10, "Clínica Internacional San Borja", 0.78, 0.48, "Privado", [esp_general, esp_cardiologia, esp_gineco]),
+        Hospital(11, "Clínica Ricardo Palma", 0.68, 0.20, "Privado", [esp_general, esp_pediatria, esp_trauma]),
+        Hospital(12, "Hospital de Emergencias Villa El Salvador", 0.33, 0.80, "SIS", [esp_general, esp_trauma]),
     ]
     return hospitals
 
@@ -126,15 +36,16 @@ HOSPITALES = build_sample_hospitals()
 # Aplicación con Tkinter (frames que cambian)
 # ----------------------------
 class SaludTurnoApp:
-    def _init_(self, root):
+    def __init__(self, root, db: Database | None = None):
         self.root = root
         root.title("SaludTurno - Gestión de Citas (Simulado)")
         root.geometry("1000x650")
         root.resizable(False, False)
 
-        self.users = load_users()
-        self.current_user = None
-        self.selected_hospital = None
+        self.db = db or Database()
+        self.db.init_schema()
+        self.current_user: Paciente | None = None
+        self.selected_hospital: Hospital | None = None
 
         # frames (inicialmente None)
         self.frame_login = None
@@ -228,14 +139,7 @@ class SaludTurnoApp:
             messagebox.showwarning("Falta información", "Ingresa DNI/correo y contraseña.")
             return
 
-        user = None
-        if key in self.users:
-            user = self.users[key]
-        else:
-            for u in self.users.values():
-                if u.correo == key:
-                    user = u
-                    break
+        user = self.db.get_user_by_identifier(key)
 
         if not user:
             messagebox.showerror("No existe", "Usuario no encontrado. Crea una cuenta.")
@@ -257,17 +161,15 @@ class SaludTurnoApp:
         if not all([nombre, dni, correo, pw]):
             messagebox.showwarning("Falta información", "Completa todos los campos para crear la cuenta.")
             return
-        if dni in self.users:
+        if self.db.get_user_by_dni(dni):
             messagebox.showerror("Error", "Ya existe un usuario con ese DNI.")
             return
-        for u in self.users.values():
-            if u.correo == correo:
-                messagebox.showerror("Error", "Correo ya en uso.")
-                return
+        if self.db.get_user_by_correo(correo):
+            messagebox.showerror("Error", "Correo ya en uso.")
+            return
         ph = hash_password(pw)
         p = Paciente(dni, correo, nombre, ph)
-        self.users[dni] = p
-        save_users(self.users)
+        self.db.create_user(p)
         messagebox.showinfo("Cuenta creada", "Cuenta creada exitosamente.")
         # Volver al login y rellenar campos con lo creado
         self.show_login_frame(prefill_dni=dni, prefill_pw=pw)
@@ -467,7 +369,79 @@ class SaludTurnoApp:
         esp = self.especialidad_var.get() or "(no seleccionado)"
         fecha = self.date_combo.get()
         hora = self.hora_combo.get()
-        texto = f"Hospital: {hospital.nombre}\nAfiliación: {hospital.afiliacion}\nEspecialidad: {esp}\nFecha: {fecha}\nHora: {hora}\nUsuario: {self.current_user.nombre}\n"
+        texto = (
+            f"Hospital: {hospital.nombre}\n"
+            f"Afiliación: {hospital.afiliacion}\n"
+            f"Especialidad: {esp}\n"
+            f"Fecha: {fecha}\n"
+            f"Hora: {hora}\n"
+            f"Usuario: {self.current_user.nombre}\n"
+        )
         self.resumen_text.config(state="normal")
         self.resumen_text.delete("1.0", tk.END)
-        self.resumen
+        self.resumen_text.insert("1.0", texto)
+        self.resumen_text.config(state="disabled")
+
+    def confirm_booking(self, hospital):
+        especialidad = self.especialidad_var.get()
+        if not especialidad:
+            messagebox.showwarning("Selecciona especialidad", "Debes escoger una especialidad para reservar.")
+            return
+
+        fecha = self.date_combo.get()
+        hora = self.hora_combo.get()
+        cita = Cita(
+            self.current_user.dni,
+            hospital.id,
+            hospital.nombre,
+            especialidad,
+            fecha,
+            hora,
+        )
+
+        self.db.add_appointment(cita)
+        self.current_user.agregar_cita(cita)
+        messagebox.showinfo(
+            "Cita reservada",
+            f"Cita en {hospital.nombre} para {especialidad} el {fecha} a las {hora} registrada con éxito.",
+        )
+        self.back_to_map()
+
+    def show_historial(self):
+        self.current_user.historial = self.db.list_appointments(self.current_user.dni)
+        if not self.current_user.historial:
+            messagebox.showinfo("Historial vacío", "Aún no tienes citas registradas.")
+            return
+
+        ventana = tk.Toplevel(self.root)
+        ventana.title("Historial de citas")
+        ventana.geometry("700x300")
+
+        cols = ("hospital", "especialidad", "fecha", "hora", "estado")
+        tree = ttk.Treeview(ventana, columns=cols, show="headings")
+        for col in cols:
+            tree.heading(col, text=col.capitalize())
+            tree.column(col, width=120)
+        tree.pack(fill="both", expand=True, padx=10, pady=10)
+
+        for c in self.current_user.historial:
+            tree.insert(
+                "",
+                tk.END,
+                values=(c.hospital_nombre, c.especialidad, c.fecha, c.hora, c.estado),
+            )
+
+    def run(self):
+        self.root.mainloop()
+
+
+def main():
+    root = tk.Tk()
+    db = Database()
+    db.init_schema()
+    app = SaludTurnoApp(root, db=db)
+    app.run()
+
+
+if __name__ == "__main__":
+    main()
