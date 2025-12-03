@@ -1,105 +1,17 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
-import json
-import hashlib
+import shutil
 from datetime import datetime, timedelta
+from pathlib import Path
+import tkinter as tk
+from tkinter import filedialog, messagebox, ttk
 
-# ----------------------------
-# POO: Clases del dominio
-# ----------------------------
-class Paciente:
-    def _init_(self, dni, correo, nombre, password_hash):
-        self.dni = dni
-        self.correo = correo
-        self.nombre = nombre
-        self.password_hash = password_hash
-        self.historial = []
+from database import Database
+from models import Cita, Especialidad, Hospital, Paciente, hash_password
 
-    def agregar_cita(self, cita):
-        self.historial.append(cita)
-
-    def to_dict(self):
-        return {
-            "dni": self.dni,
-            "correo": self.correo,
-            "nombre": self.nombre,
-            "password_hash": self.password_hash,
-            "historial": [c.to_dict() for c in self.historial]
-        }
-
-    @staticmethod
-    def from_dict(d):
-        p = Paciente(d['dni'], d['correo'], d['nombre'], d['password_hash'])
-        p.historial = [Cita.from_dict(cd) for cd in d.get('historial', [])]
-        return p
-
-class Medico:
-    def _init_(self, nombre, especialidad):
-        self.nombre = nombre
-        self.especialidad = especialidad
-
-class Especialidad:
-    def _init_(self, nombre):
-        self.nombre = nombre
-
-class Hospital:
-    def _init(self, id, nombre, x, y, afiliacion, especialidades):
-        self.id = id_
-        self.nombre = nombre
-        self.x = x
-        self.y = y
-        self.afiliacion = afiliacion
-        self.especialidades = especialidades
-
-class Cita:
-    def _init_(self, paciente_dni, hospital_id, hospital_nombre, especialidad, fecha, hora, estado="Reservada"):
-        self.paciente_dni = paciente_dni
-        self.hospital_id = hospital_id
-        self.hospital_nombre = hospital_nombre
-        self.especialidad = especialidad
-        self.fecha = fecha
-        self.hora = hora
-        self.estado = estado
-
-    def to_dict(self):
-        return {
-            "paciente_dni": self.paciente_dni,
-            "hospital_id": self.hospital_id,
-            "hospital_nombre": self.hospital_nombre,
-            "especialidad": self.especialidad,
-            "fecha": self.fecha,
-            "hora": self.hora,
-            "estado": self.estado
-        }
-
-    @staticmethod
-    def from_dict(d):
-        return Cita(d['paciente_dni'], d['hospital_id'], d['hospital_nombre'],
-                    d['especialidad'], d['fecha'], d['hora'], d.get('estado', 'Reservada'))
-
-# ----------------------------
-# Persistencia simple de usuarios
-# ----------------------------
-USERS_FILE = "users.json"
-
-def load_users():
-    try:
-        with open(USERS_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return {k: Paciente.from_dict(v) for k, v in data.items()}
-    except FileNotFoundError:
-        return {}
-    except Exception as e:
-        print("Error cargando users:", e)
-        return {}
-
-def save_users(users):
-    data = {k: v.to_dict() for k, v in users.items()}
-    with open(USERS_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-def hash_password(pw):
-    return hashlib.sha256(pw.encode("utf-8")).hexdigest()
+BASE_DIR = Path(__file__).resolve().parent
+MEDIA_DIR = BASE_DIR / "media" / "profiles"
+REPORTS_DIR = BASE_DIR / "reports"
+MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
 # ----------------------------
 # Datos de hospitales del Callao (simulados)
@@ -117,24 +29,113 @@ def build_sample_hospitals():
         Hospital(4, "Posta Salud A (Callao Centro)", 0.45, 0.70, "SIS", [esp_general, esp_pediatria]),
         Hospital(5, "Posta Salud B (La Perla)", 0.20, 0.25, "Seguro", [esp_general, esp_gineco]),
         Hospital(6, "Centro de Salud Ventanilla", 0.85, 0.25, "SIS", [esp_general, esp_trauma]),
+        Hospital(7, "Hospital Nacional Alberto Sabogal", 0.62, 0.42, "Seguro", [esp_general, esp_cardiologia, esp_gineco]),
+        Hospital(8, "Hospital Nacional Arzobispo Loayza", 0.40, 0.15, "SIS", [esp_general, esp_gineco, esp_pediatria]),
+        Hospital(9, "Hospital Guillermo Almenara", 0.15, 0.45, "Seguro", [esp_general, esp_cardiologia, esp_trauma]),
+        Hospital(10, "Clínica Internacional San Borja", 0.78, 0.48, "Privado", [esp_general, esp_cardiologia, esp_gineco]),
+        Hospital(11, "Clínica Ricardo Palma", 0.68, 0.20, "Privado", [esp_general, esp_pediatria, esp_trauma]),
+        Hospital(12, "Hospital de Emergencias Villa El Salvador", 0.33, 0.80, "SIS", [esp_general, esp_trauma]),
+        Hospital(13, "Hospital María Auxiliadora", 0.48, 0.88, "SIS", [esp_general, esp_gineco, esp_pediatria]),
+        Hospital(14, "Hospital Cayetano Heredia", 0.22, 0.60, "Seguro", [esp_general, esp_cardiologia, esp_trauma]),
+        Hospital(15, "Clínica Delgado", 0.70, 0.32, "Privado", [esp_general, esp_cardiologia, esp_gineco]),
+        Hospital(16, "Clínica Anglo Americana", 0.60, 0.12, "Privado", [esp_general, esp_pediatria, esp_cardiologia]),
     ]
     return hospitals
 
 HOSPITALES = build_sample_hospitals()
 
+
+def save_profile_image(source_path: str | Path) -> str | None:
+    try:
+        src = Path(source_path)
+        if not src.exists():
+            return None
+        destination = MEDIA_DIR / f"{src.stem}_{int(datetime.now().timestamp())}{src.suffix}"
+        shutil.copy(src, destination)
+        return str(destination)
+    except Exception:
+        print("error")
+    return None
+
+
+def _escape_pdf_text(text: str) -> str:
+    return text.replace("\\", r"\\").replace("(", r"\(").replace(")", r"\)")
+
+
+def _write_basic_pdf(title: str, lines: list[str], output_path: Path) -> Path | None:
+    try:
+        content_lines = []
+        y_pos = 760
+        content_lines.append(f"BT /F1 16 Tf 72 {y_pos} Td ({_escape_pdf_text(title)}) Tj ET")
+        y_pos -= 24
+        for line in lines:
+            content_lines.append(f"BT /F1 11 Tf 72 {y_pos} Td ({_escape_pdf_text(line)}) Tj ET")
+            y_pos -= 16
+        stream = "\n".join(content_lines)
+        stream_bytes = stream.encode("utf-8")
+
+        objects = [
+            "1 0 obj<< /Type /Catalog /Pages 2 0 R >>endobj\n",
+            "2 0 obj<< /Type /Pages /Kids [3 0 R] /Count 1 >>endobj\n",
+            "3 0 obj<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>endobj\n",
+            f"4 0 obj<< /Length {len(stream_bytes)} >>stream\n{stream}\nendstream endobj\n",
+            "5 0 obj<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>endobj\n",
+        ]
+
+        pdf_parts = ["%PDF-1.4\n"]
+        offsets = []
+        cursor = len(pdf_parts[0])
+        for obj in objects:
+            offsets.append(cursor)
+            pdf_parts.append(obj)
+            cursor += len(obj.encode("utf-8"))
+
+        xref_start = cursor
+        xref_lines = ["xref", "0 6", "0000000000 65535 f "]
+        for off in offsets:
+            xref_lines.append(f"{off:010d} 00000 n ")
+        trailer = "trailer<< /Size 6 /Root 1 0 R >>"
+        startxref = f"startxref\n{xref_start}"
+        pdf_parts.append("\n".join(xref_lines) + "\n" + trailer + "\n" + startxref + "\n%%EOF")
+
+        output_path.write_text("".join(pdf_parts), encoding="utf-8")
+        return output_path
+    except Exception:
+        print("error")
+        return None
+
+
+def generate_pdf_report(paciente: Paciente, citas: list[Cita], output_path: Path) -> Path | None:
+    try:
+        lines = [f"Paciente: {paciente.nombre} ({paciente.dni})", f"Correo: {paciente.correo}", ""]
+        if not citas:
+            lines.append("Sin citas registradas.")
+        else:
+            for c in citas:
+                lines.append(
+                    f"- {c.fecha} {c.hora} | {c.especialidad} en {c.hospital_nombre} — Estado: {c.estado}"
+                )
+        return _write_basic_pdf("Historial de citas - SaludTurno", lines, output_path)
+    except Exception:
+        print("error")
+        return None
+
 # ----------------------------
 # Aplicación con Tkinter (frames que cambian)
 # ----------------------------
 class SaludTurnoApp:
-    def _init_(self, root):
+    def __init__(self, root, db: Database | None = None):
         self.root = root
         root.title("SaludTurno - Gestión de Citas (Simulado)")
         root.geometry("1000x650")
         root.resizable(False, False)
 
-        self.users = load_users()
-        self.current_user = None
-        self.selected_hospital = None
+        self.db = db or Database()
+        self.db.init_schema()
+        self.current_user: Paciente | None = None
+        self.selected_hospital: Hospital | None = None
+        self.profile_image_obj = None
+        self.signup_profile_path: str | None = None
 
         # frames (inicialmente None)
         self.frame_login = None
@@ -184,6 +185,7 @@ class SaludTurnoApp:
         self.hide_all_frames()
         self.frame_signup = ttk.Frame(self.root, padding=20)
         self.frame_signup.place(relx=0.5, rely=0.5, anchor="center")
+        self.signup_profile_path = None
 
         ttk.Label(self.frame_signup, text="Crear cuenta - SaludTurno", font=("Helvetica", 16)).grid(column=0, row=0, columnspan=2, pady=(0,10))
 
@@ -203,12 +205,18 @@ class SaludTurnoApp:
         self.signup_entry_pass = ttk.Entry(self.frame_signup, width=35, show="*")
         self.signup_entry_pass.grid(column=1, row=4, pady=4)
 
+        ttk.Label(self.frame_signup, text="Foto de perfil (opcional):").grid(column=0, row=5, sticky="e")
+        btn_photo = ttk.Button(self.frame_signup, text="Seleccionar", command=self.select_signup_photo)
+        btn_photo.grid(column=1, row=5, pady=4, sticky="w")
+        self.signup_photo_label = ttk.Label(self.frame_signup, text="Sin imagen cargada")
+        self.signup_photo_label.grid(column=1, row=5, padx=(90,0), sticky="w")
+
         btn_create = ttk.Button(self.frame_signup, text="Crear cuenta", command=self.create_account_action)
-        btn_create.grid(column=0, row=5, columnspan=2, pady=(10,0))
+        btn_create.grid(column=0, row=6, columnspan=2, pady=(10,0))
 
         # Botón para volver al login si cambió de opinión
         btn_back = ttk.Button(self.frame_signup, text="Volver al inicio", command=lambda: self.show_login_frame())
-        btn_back.grid(column=0, row=6, columnspan=2, pady=(6,0))
+        btn_back.grid(column=0, row=7, columnspan=2, pady=(6,0))
 
     def hide_all_frames(self):
         for f in [self.frame_login, self.frame_signup, self.frame_main, self.frame_booking]:
@@ -217,6 +225,24 @@ class SaludTurnoApp:
                     f.destroy()
                 except:
                     pass
+
+    def select_signup_photo(self):
+        try:
+            file_path = filedialog.askopenfilename(
+                title="Selecciona una foto",
+                filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.gif"), ("Todos", "*.*")],
+            )
+            if not file_path:
+                return
+            stored = save_profile_image(file_path)
+            if stored:
+                self.signup_profile_path = stored
+                if hasattr(self, "signup_photo_label"):
+                    self.signup_photo_label.config(text=Path(file_path).name)
+            else:
+                messagebox.showerror("Error", "No se pudo guardar la imagen de perfil.")
+        except Exception:
+            print("error")
 
     # ----------------------------
     # Acciones de Login / Signup
@@ -228,14 +254,11 @@ class SaludTurnoApp:
             messagebox.showwarning("Falta información", "Ingresa DNI/correo y contraseña.")
             return
 
-        user = None
-        if key in self.users:
-            user = self.users[key]
-        else:
-            for u in self.users.values():
-                if u.correo == key:
-                    user = u
-                    break
+        try:
+            user = self.db.get_user_by_identifier(key)
+        except Exception:
+            print("error")
+            user = None
 
         if not user:
             messagebox.showerror("No existe", "Usuario no encontrado. Crea una cuenta.")
@@ -257,18 +280,20 @@ class SaludTurnoApp:
         if not all([nombre, dni, correo, pw]):
             messagebox.showwarning("Falta información", "Completa todos los campos para crear la cuenta.")
             return
-        if dni in self.users:
+        if self.db.get_user_by_dni(dni):
             messagebox.showerror("Error", "Ya existe un usuario con ese DNI.")
             return
-        for u in self.users.values():
-            if u.correo == correo:
-                messagebox.showerror("Error", "Correo ya en uso.")
-                return
+        if self.db.get_user_by_correo(correo):
+            messagebox.showerror("Error", "Correo ya en uso.")
+            return
         ph = hash_password(pw)
-        p = Paciente(dni, correo, nombre, ph)
-        self.users[dni] = p
-        save_users(self.users)
-        messagebox.showinfo("Cuenta creada", "Cuenta creada exitosamente.")
+        p = Paciente(dni, correo, nombre, ph, self.signup_profile_path)
+        try:
+            self.db.create_user(p)
+            messagebox.showinfo("Cuenta creada", "Cuenta creada exitosamente.")
+        except Exception:
+            print("error")
+            messagebox.showerror("Error", "No se pudo crear la cuenta.")
         # Volver al login y rellenar campos con lo creado
         self.show_login_frame(prefill_dni=dni, prefill_pw=pw)
 
@@ -303,6 +328,12 @@ class SaludTurnoApp:
         self.afiliacion_var = tk.StringVar(value="Todos")
         for v in ["Todos", "Seguro", "SIS", "Privado", "Ambos"]:
             ttk.Radiobutton(control, text=v, variable=self.afiliacion_var, value=v, command=self.render_hospital_list).pack(anchor="w")
+
+        ttk.Separator(control, orient="horizontal").pack(fill="x", pady=6)
+        ttk.Label(control, text="Perfil actual:").pack(anchor="w")
+        self.profile_text = tk.StringVar(value=self._profile_label())
+        ttk.Label(control, textvariable=self.profile_text, wraplength=200).pack(anchor="w")
+        ttk.Button(control, text="Actualizar foto", command=self.change_profile_photo).pack(anchor="w", pady=4)
 
         ttk.Separator(control, orient="horizontal").pack(fill="x", pady=6)
         ttk.Label(control, text="Hospitales:").pack(anchor="w")
@@ -369,6 +400,32 @@ class SaludTurnoApp:
                     self.hospital_listbox.selection_clear(0, tk.END)
                     self.hospital_listbox.selection_set(idx)
                 break
+
+    def _profile_label(self):
+        if self.current_user and self.current_user.profile_image:
+            return f"Foto: {Path(self.current_user.profile_image).name}"
+        return "Foto: sin cargar"
+
+    def change_profile_photo(self):
+        try:
+            file_path = filedialog.askopenfilename(
+                title="Actualizar foto de perfil",
+                filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.gif"), ("Todos", "*.*")],
+            )
+            if not file_path or not self.current_user:
+                return
+            stored = save_profile_image(file_path)
+            if not stored:
+                messagebox.showerror("Error", "No se pudo guardar la imagen.")
+                return
+            self.current_user.actualizar_foto(stored)
+            self.db.update_profile_image(self.current_user.dni, stored)
+            if hasattr(self, "profile_text"):
+                self.profile_text.set(self._profile_label())
+            messagebox.showinfo("Actualizado", "Foto de perfil actualizada.")
+        except Exception:
+            print("error")
+            messagebox.showerror("Error", "No se pudo actualizar la foto de perfil.")
 
     def highlight_hospital(self, hospital):
         self.canvas.delete("highlight")
@@ -467,7 +524,107 @@ class SaludTurnoApp:
         esp = self.especialidad_var.get() or "(no seleccionado)"
         fecha = self.date_combo.get()
         hora = self.hora_combo.get()
-        texto = f"Hospital: {hospital.nombre}\nAfiliación: {hospital.afiliacion}\nEspecialidad: {esp}\nFecha: {fecha}\nHora: {hora}\nUsuario: {self.current_user.nombre}\n"
+        texto = (
+            f"Hospital: {hospital.nombre}\n"
+            f"Afiliación: {hospital.afiliacion}\n"
+            f"Especialidad: {esp}\n"
+            f"Fecha: {fecha}\n"
+            f"Hora: {hora}\n"
+            f"Usuario: {self.current_user.nombre}\n"
+        )
         self.resumen_text.config(state="normal")
         self.resumen_text.delete("1.0", tk.END)
-        self.resumen
+        self.resumen_text.insert("1.0", texto)
+        self.resumen_text.config(state="disabled")
+
+    def confirm_booking(self, hospital):
+        especialidad = self.especialidad_var.get()
+        if not especialidad:
+            messagebox.showwarning("Selecciona especialidad", "Debes escoger una especialidad para reservar.")
+            return
+
+        fecha = self.date_combo.get()
+        hora = self.hora_combo.get()
+        cita = Cita(
+            self.current_user.dni,
+            hospital.id,
+            hospital.nombre,
+            especialidad,
+            fecha,
+            hora,
+        )
+        try:
+            self.db.add_appointment(cita)
+            self.current_user.agregar_cita(cita)
+            messagebox.showinfo(
+                "Cita reservada",
+                f"Cita en {hospital.nombre} para {especialidad} el {fecha} a las {hora} registrada con éxito.",
+            )
+            self.back_to_map()
+        except Exception:
+            print("error")
+            messagebox.showerror("Error", "No se pudo registrar la cita.")
+
+    def show_historial(self):
+        self.current_user.historial = self.db.list_appointments(self.current_user.dni)
+        if not self.current_user.historial:
+            messagebox.showinfo("Historial vacío", "Aún no tienes citas registradas.")
+            return
+
+        ventana = tk.Toplevel(self.root)
+        ventana.title("Historial de citas")
+        ventana.geometry("700x300")
+
+        cols = ("hospital", "especialidad", "fecha", "hora", "estado")
+        tree = ttk.Treeview(ventana, columns=cols, show="headings")
+        for col in cols:
+            tree.heading(col, text=col.capitalize())
+            tree.column(col, width=120)
+        tree.pack(fill="both", expand=True, padx=10, pady=10)
+
+        for c in self.current_user.historial:
+            tree.insert(
+                "",
+                tk.END,
+                values=(c.hospital_nombre, c.especialidad, c.fecha, c.hora, c.estado),
+            )
+
+        ttk.Button(
+            ventana,
+            text="Exportar historial a PDF",
+            command=lambda: self.export_historial_pdf(),
+        ).pack(pady=6)
+
+    def export_historial_pdf(self):
+        try:
+            if not self.current_user:
+                messagebox.showerror("Error", "No hay usuario en sesión.")
+                return
+            citas = self.current_user.historial if self.current_user.historial else []
+            if not citas:
+                messagebox.showinfo("Sin datos", "No hay citas para exportar.")
+                return
+            filename = REPORTS_DIR / f"historial_{self.current_user.dni}_{int(datetime.now().timestamp())}.pdf"
+            result = generate_pdf_report(self.current_user, citas, filename)
+            if result:
+                messagebox.showinfo("Reporte listo", f"PDF guardado en:\n{result}")
+            else:
+                messagebox.showerror("Error", "No se pudo generar el PDF.")
+        except Exception:
+            print("error")
+            messagebox.showerror("Error", "Ocurrió un problema al exportar el PDF.")
+
+    def run(self):
+        self.root.mainloop()
+
+
+def main():
+    root = tk.Tk()
+    db = Database()
+    db.init_schema()
+    app = SaludTurnoApp(root, db=db)
+    app.run()
+
+
+if __name__ == "__main__":
+    main()
