@@ -29,7 +29,10 @@ def load_images(width: int = 200):
 
 def main():
     window = tk.Tk()
-    window.title("Radio Buttons con colores - Item 3")
+    window.title("Radio Buttons con marco - Item 4")
+
+    container = tk.Frame(window, bd=2, relief="groove", padx=12, pady=12, bg="#fafafa")
+    container.grid(row=0, column=0, padx=20, pady=20)
 
     selected_option = tk.IntVar(value=0)
     photos = load_images()
@@ -38,12 +41,12 @@ def main():
         row = index // 2
         column = index % 2
 
-        image_label = tk.Label(window, image=photo)
+        image_label = tk.Label(container, image=photo, bg=container["bg"])
         image_label.image = photo
         image_label.grid(row=row * 2, column=column, padx=10, pady=(10, 0))
 
         radio = tk.Radiobutton(
-            window,
+            container,
             text=f"Opción {index + 1}",
             variable=selected_option,
             value=index + 1,
