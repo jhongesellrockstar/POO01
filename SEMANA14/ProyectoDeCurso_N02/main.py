@@ -1,10 +1,12 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import json
+import os
 import hashlib
 from datetime import datetime, timedelta
 import calendar
 import importlib.util
+import sqlite3
 
 # Comprobar dependencias opcionales sin atrapar excepciones en los imports
 REPORTLAB_AVAILABLE = importlib.util.find_spec("reportlab") is not None
@@ -217,38 +219,98 @@ class Cita:
                    d.get('medico'), d.get('seguro'), float(d.get('costo', 0)))
 
 # ----------------------------
-# Persistencia simple de usuarios
+# Persistencia de usuarios con SQLite (con copia JSON opcional)
 # ----------------------------
-USERS_FILE = "users.json"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+USERS_FILE = os.path.join(BASE_DIR, "users.json")
+USERS_DB = os.path.join(BASE_DIR, "saludturno_users.db")
 
-def load_users():
+
+def ensure_db():
+    """Crear la tabla de usuarios si no existe y devolver la conexión."""
+    conn = sqlite3.connect(USERS_DB)
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS users (
+            dni TEXT PRIMARY KEY,
+            correo TEXT UNIQUE,
+            nombre TEXT,
+            password_hash TEXT,
+            seguro TEXT,
+            historial_json TEXT
+        )
+        """
+    )
+    conn.commit()
+    return conn
+
+
+def _normalize_historial(paciente):
+    """Asegurar que los costos en el historial sean numéricos."""
+    for cita in paciente.historial:
+        if hasattr(cita, "costo") and cita.costo is not None:
+            try:
+                if isinstance(cita.costo, str):
+                    cita.costo = float(cita.costo)
+                elif not isinstance(cita.costo, (int, float)):
+                    cita.costo = 0.0
+            except (ValueError, TypeError):
+                cita.costo = 0.0
+
+
+def load_users_from_json_file():
+    """Cargar usuarios desde JSON (ruta legacy) para migración o respaldo."""
     try:
         with open(USERS_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
             users = {}
             for k, v in data.items():
                 paciente = Paciente.from_dict(v)
-                # Verificar y corregir posibles problemas con los costos en el historial de citas
-                for cita in paciente.historial:
-                    if hasattr(cita, 'costo') and cita.costo is not None:
-                        try:
-                            # Intentar convertir a float, si falla usar 0.0
-                            if isinstance(cita.costo, str):
-                                # Si es una cadena que representa un número, convertirla
-                                cita.costo = float(cita.costo)
-                            elif not isinstance(cita.costo, (int, float)):
-                                # Si no es numérico, usar 0.0
-                                cita.costo = 0.0
-                        except (ValueError, TypeError):
-                            # Si no se puede convertir, usar 0.0
-                            cita.costo = 0.0
+                _normalize_historial(paciente)
                 users[k] = paciente
             return users
     except FileNotFoundError:
         return {}
     except Exception as e:
-        print("Error cargando users:", e)
+        print("Error cargando users desde JSON:", e)
         return {}
+
+
+def load_users():
+    conn = ensure_db()
+    cursor = conn.execute("SELECT dni, correo, nombre, password_hash, seguro, historial_json FROM users")
+    rows = cursor.fetchall()
+    users = {}
+
+    if not rows:
+        conn.close()
+        # Si la base está vacía, intentar migrar desde users.json
+        fallback = load_users_from_json_file()
+        if fallback:
+            save_users(fallback)
+        return fallback
+
+    for dni, correo, nombre, password_hash, seguro_json, historial_json in rows:
+        seguro = None
+        if seguro_json:
+            try:
+                seguro_data = json.loads(seguro_json)
+                seguro = Seguro.from_dict(seguro_data)
+            except Exception:
+                seguro = None
+        historial_data = []
+        if historial_json:
+            try:
+                historial_data = json.loads(historial_json)
+            except Exception:
+                historial_data = []
+        paciente = Paciente(dni, correo, nombre, password_hash, seguro)
+        paciente.historial = [Cita.from_dict(cd) for cd in historial_data]
+        _normalize_historial(paciente)
+        users[dni] = paciente
+
+    conn.close()
+    return users
 
 def load_hospitals():
     """Cargar hospitales desde un archivo o crearlos si no existen"""
@@ -265,21 +327,37 @@ def load_hospitals():
         return build_sample_hospitals_with_doctors()
 
 def save_users(users):
-    # Antes de guardar, asegurarse de que los costos sean valores numéricos consistentes
-    data = {}
-    for k, v in users.items():
-        paciente_dict = v.to_dict()
-        # Asegurar que los costos en el historial sean valores numéricos
-        for cita_dict in paciente_dict.get('historial', []):
-            if 'costo' in cita_dict and cita_dict['costo'] is not None:
-                try:
-                    if isinstance(cita_dict['costo'], str):
-                        cita_dict['costo'] = float(cita_dict['costo'])
-                    elif not isinstance(cita_dict['costo'], (int, float)):
-                        cita_dict['costo'] = 0.0
-                except (ValueError, TypeError):
-                    cita_dict['costo'] = 0.0
-        data[k] = paciente_dict
+    """Guardar usuarios en SQLite y dejar una copia JSON como respaldo legible."""
+    conn = ensure_db()
+    with conn:
+        for paciente in users.values():
+            _normalize_historial(paciente)
+            seguro_json = json.dumps(paciente.seguro.to_dict()) if paciente.seguro else None
+            historial_json = json.dumps([c.to_dict() for c in paciente.historial])
+            conn.execute(
+                """
+                INSERT INTO users (dni, correo, nombre, password_hash, seguro, historial_json)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(dni) DO UPDATE SET
+                    correo=excluded.correo,
+                    nombre=excluded.nombre,
+                    password_hash=excluded.password_hash,
+                    seguro=excluded.seguro,
+                    historial_json=excluded.historial_json
+                """,
+                (
+                    paciente.dni,
+                    paciente.correo,
+                    paciente.nombre,
+                    paciente.password_hash,
+                    seguro_json,
+                    historial_json,
+                ),
+            )
+    conn.close()
+
+    # Copia en JSON para auditoría o inspección manual
+    data = {k: v.to_dict() for k, v in users.items()}
     with open(USERS_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
