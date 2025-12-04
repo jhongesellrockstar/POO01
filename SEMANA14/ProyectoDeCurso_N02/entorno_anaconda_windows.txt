@@ -1,0 +1,30 @@
+# Pasos rápidos para preparar el entorno en Windows 10 (Anaconda Prompt)
+# Copia y pega bloque por bloque.
+
+:: 1) Crear entorno virtual
+conda create -n UNAC_POO01 python=3.10 -y
+
+:: 2) Activar el entorno
+conda activate UNAC_POO01
+
+:: 3) Actualizar pip dentro del entorno
+python -m pip install --upgrade pip
+
+:: 4) Instalar dependencias del proyecto (incluye PDF y reconocimiento facial)
+pip install -r requirements.txt
+
+:: 5) Ejecutar la aplicación SaludTurno
+python run_app.py
+
+:: 6) Opcional: reinstalar ReportLab si hay problemas con fuentes o PDF
+pip install --force-reinstall --no-cache-dir reportlab
+
+:: 7) Si la webcam no funciona, intenta especificar otro índice de cámara
+# python - <<"PY"
+# import cv2
+# cam = cv2.VideoCapture(1)  # prueba 0, 1 o 2
+# print("Camara abierta?", cam.isOpened())
+# PY
+
+:: 8) Desactivar el entorno al terminar
+conda deactivate
