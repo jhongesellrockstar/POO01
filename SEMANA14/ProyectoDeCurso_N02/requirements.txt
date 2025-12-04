@@ -1,4 +1,8 @@
-# Dependencias opcionales para SaludTurno
+# Dependencias para SaludTurno
 # Instala todo con: pip install -r requirements.txt
-# "reportlab" habilita la generación de tickets en PDF. Si no está presente, la app sigue funcionando y usa tickets en texto.
+# "reportlab" habilita la generación de tickets en PDF.
+# "opencv-python" permite la verificación facial por webcam.
 reportlab>=3.6.0
+opencv-python>=4.9.0.80
+Pillow>=10.0.0
+numpy>=1.24.0
