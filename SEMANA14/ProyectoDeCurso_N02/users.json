@@ -15,7 +15,7 @@
         "estado": "Reservada",
         "medico": "Dr. Juan Pérez",
         "seguro": "SIS",
-        "costo": 100
+        "costo": 100.0
       },
       {
         "paciente_dni": "72460711",
@@ -27,9 +27,17 @@
         "estado": "Reservada",
         "medico": "Dr. Carlos Mendoza",
         "seguro": "SIS",
-        "costo": 200
+        "costo": 200.0
       }
     ],
+    "seguro": null
+  },
+  "70585223": {
+    "dni": "70585223",
+    "correo": "jhvillanueva91@gmail.com",
+    "nombre": "Jhon Gesell Villanueva Portella",
+    "password_hash": "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4",
+    "historial": [],
     "seguro": null
   }
 }
